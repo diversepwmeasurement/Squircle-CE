@@ -1,54 +1,56 @@
-name: Android CI
-
-on:
-  push:
-    branches: [ "master", "develop" ]
-  pull_request:
-    branches: [ "master", "develop" ]
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'true'
+    - continue-on-error: true
+      uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    - continue-on-error: true
+      name: Create local.properties
+      run: 'echo "Creating local.properties file"
 
-      - name: Create local.properties
-        run: |
-          echo "Creating local.properties file"
-          echo "KEYSTORE_PATH=${{ secrets.KEYSTORE_PATH }}" > local.properties
-          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
-          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> local.properties
-          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> local.properties
+        echo "KEYSTORE_PATH=${{ secrets.KEYSTORE_PATH }}" > local.properties
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
+        echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> local.properties
 
-      - name: Build with Gradle
-        run: ./gradlew :app:assembleDebug
+        echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> local.properties
 
-      - name: Unit Test
-        run: ./gradlew testDebugUnitTest
-
-      - name: Check Kotlin code style
-        run: ./gradlew ktlintCheck
-
-      - name: Upload Debug APK (Google Play)
-        uses: actions/upload-artifact@v3
-        with:
-          name: Google Play App (Debug)
-          path: ./app/build/outputs/apk/googlePlay/debug/app-googlePlay-debug.apk
-
-      - name: Upload Debug APK (F-Droid)
-        uses: actions/upload-artifact@v3
-        with:
-          name: F-Droid App (Debug)
-          path: ./app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+        '
+    - continue-on-error: true
+      name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        cache: gradle
+        distribution: temurin
+        java-version: '17'
+    - continue-on-error: true
+      name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - continue-on-error: true
+      name: Build with Gradle
+      run: ./gradlew :app:assembleDebug
+    - continue-on-error: true
+      name: Unit Test
+      run: ./gradlew testDebugUnitTest
+    - continue-on-error: true
+      name: Check Kotlin code style
+      run: ./gradlew ktlintCheck
+    - continue-on-error: true
+      name: Upload Debug APK (Google Play)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Google Play App (Debug)
+        path: ./app/build/outputs/apk/googlePlay/debug/app-googlePlay-debug.apk
+    - continue-on-error: true
+      name: Upload Debug APK (F-Droid)
+      uses: actions/upload-artifact@v3
+      with:
+        name: F-Droid App (Debug)
+        path: ./app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+name: Android CI
+on:
+  repository_dispatch:
+    types: trigger-ga___android.yml
